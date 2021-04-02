@@ -1,10 +1,10 @@
+ARG CABAL_VERSION=3.2.0.0
+FROM juampe/base-cabal:${CABAL_VERSION}
 ARG TARGETARCH
 ARG DEBIAN_FRONTEND="noninteractive"
 ARG GHC_VERSION=8.10.2
 ARG CABAL_VERSION=3.2.0.0
 ARG JOBS="-j1"
-
-FROM juampe/base-cabal:${CABAL_VERSION}
 # export TARGETARCH=arm64 DEBIAN_FRONTEND="noninteractive" CABAL_VERSION=3.2.0.0 GHC_VERSION=8.10.2 NODE_VERSION=1.25.1 JOBS="-j2"
 
 #Install target ghc with debian patches
