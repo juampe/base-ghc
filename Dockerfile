@@ -1,9 +1,9 @@
 ARG CABAL_VERSION=3.2.0.0
+
 FROM juampe/base-cabal:${CABAL_VERSION}
 ARG TARGETARCH
 ARG DEBIAN_FRONTEND="noninteractive"
 ARG GHC_VERSION=8.10.2
-ARG CABAL_VERSION=3.2.0.0
 ARG JOBS="-j1"
 # export TARGETARCH=arm64 DEBIAN_FRONTEND="noninteractive" CABAL_VERSION=3.2.0.0 GHC_VERSION=8.10.2 NODE_VERSION=1.25.1 JOBS="-j2"
 
@@ -17,9 +17,9 @@ RUN apt-get -y build-dep ghc \
   && for i in $(cat /patches/ghc-patches-${GHC_VERSION}/series|grep -v ^#);do echo $i ;cat /patches/ghc-patches-${GHC_VERSION}/$i |patch -p1 ;done \
   && ./boot \
   && ./configure 
-#Dute to build time force container commit
+#Due to build time, force container commit every step
 RUN cd /ghc \
-  && make ${JOBS} \
+  && make ${JOBS} 
 RUN cd /ghc \
   && make ${JOBS} install
 
