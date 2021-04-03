@@ -16,12 +16,16 @@ RUN apt-get -y build-dep ghc \
   && git submodule update --init \
   && for i in $(cat /patches/ghc-patches-${GHC_VERSION}/series|grep -v ^#);do echo $i ;cat /patches/ghc-patches-${GHC_VERSION}/$i |patch -p1 ;done \
   && ./boot \
-  && ./configure 
+  && ./configure \
+  && /bin/echo -ne "GhcLibHcOpts+=-haddock\nHAVE_OFD_LOCKING=0\nBUILD_EXTRA_PKGS=NO\nHADDOCK_DOCS=NO\nBUILD_MAN=NO\nBUILD_SPHINX_HTML=NO\nBUILD_SPHINX_PDF=NO" > mk/build.mk \
+
 #Due to build time, force container commit every step
 RUN cd /ghc \
   && make ${JOBS} 
 RUN cd /ghc \
   && make ${JOBS} install
+RUN rm -Rf /ghc 
+
 
 # #&& /bin/echo -ne "GhcLibHcOpts+=-haddock\nHAVE_OFD_LOCKING=0\nBUILD_EXTRA_PKGS=NO\nHADDOCK_DOCS=NO\nBUILD_MAN=NO\nBUILD_SPHINX_HTML=NO\nBUILD_SPHINX_PDF=NO" > mk/build.mk \
 
