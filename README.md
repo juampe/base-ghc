@@ -18,6 +18,8 @@ Access to the multi-platform docker [image](https://hub.docker.com/r/juampe/base
 Access to the Git [repository](https://github.com/juampe/base-ghc)
 
 It is based in [juampe/base-cabal](https://hub.docker.com/r/juampe/base-cabal).
+# Minimize supply chain attack. 🔗
+You can supervise all the sources, all the build steps, build yourserlf.
 # Multi-platform image 👪
 Supported platforms:
 
