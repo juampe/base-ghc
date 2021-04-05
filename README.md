@@ -25,7 +25,6 @@ Supported platforms:
 
 * linux/amd64
 * linux/arm64/v8
-* linux/arm/v7
 
 🙏If you apprecciate the effort, please consider to support us making an ADA donation or staking ADA into the Nutcracker [NUTCK](https://nutcracker.work/) pool. 
 addr1qys8y92emhj6r5rs7puw6df9ahcvna6gtdm7jlseg8ek7xf46xjc0eelmgtjvmcl9tjgaamz93f4e5nu86dus6grqyrqd28l0r
@@ -43,6 +42,7 @@ We planned to made in 3 phases:
  * Unable to use Github action due to service limitations
  * Unable to use qemu with amd64 due to ghc-pkg OFD hLock 
  * Build with arm64v8 Gravitron
+
 # Build your own container. 🏗️
 From a ubuntu:groovy prepare for docker buildx multiarch environment
 ```
