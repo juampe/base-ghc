@@ -10,27 +10,38 @@
 </p>
 <!-- markdownlint-enable MD033 -->
 
-# Multiarch ghc docker container to build cardano 🐳
+# GHC docker container to build cardano 🐳
 Cardano docker is can now be supported as container a in Raspberri Pi or AWS Gravitron container platform.
 It is based in ubuntu focal builder in a documented and formal way (supply chain review).
 
 Access to the multi-platform docker [image](https://hub.docker.com/r/juampe/base-ghc).
 Access to the Git [repository](https://github.com/juampe/base-ghc)
-# A complex building proccess recipe to build cardano.
-We are working very hard, to bring this container. The building process in quemu arm64 is huge.
+
+It is based in [juampe/base-cabal](https://hub.docker.com/r/juampe/base-cabal).
+# Multi-platform image 👪
+Supported platforms:
+
+* linux/amd64
+* linux/arm64/v8
+* linux/arm/v7
+
+🙏If you apprecciate the effort, please consider to support us making an ADA donation or staking ADA into the Nutcracker [NUTCK](https://nutcracker.work/) pool. 
+addr1qys8y92emhj6r5rs7puw6df9ahcvna6gtdm7jlseg8ek7xf46xjc0eelmgtjvmcl9tjgaamz93f4e5nu86dus6grqyrqd28l0r
+# A complex building proccess recipe to build cardano. 🔥
+We are working very hard, to bring this container. The building process in quemu arm64 is huge (20 times slower).
 Please undestand that this is an "spartan race" building process due to qemu limitations.
 We planned to made in 3 phases:
 * Phase 1 Build Cabal 3.2.0.0 free of OFD Locking
- * Build with Github action in 12896.0s
+ * Build with Github action in 12896s
+ * Build with amd64 12VCPU 32GMEM 50GSSD in 7045s
 * Phase 2 Build ghc 8.10.2 compatible with state-of-the-art qemu for multi architecture CI/CD
- * Avoid the qemu "hLock: invalid argument (Invalid argument)" problem
  * Unable to use Github action due to service limitations
- * Build with amd64 12VCPU 32GMEM 50GSSD in 26513.0s
+ * Build with amd64 12VCPU 32GMEM 50GSSD in 26513s
 * Phase 3 Bulid Cardano 1.25.1
  * Unable to use Github action due to service limitations
- * Build with amd64 12VCPU 32GMEM 50GSSD in 26513.0s
-
-# Build your own.
+ * Unable to use qemu with amd64 due to ghc-pkg OFD hLock 
+ * Build with arm64v8 Gravitron
+# Build your own container. 🏗️
 From a ubuntu:groovy prepare for docker buildx multiarch environment
 ```
 apt-get update
@@ -51,9 +62,7 @@ docker buildx ls
 git clone https://github.com/juampe/base-ghc.git
 cd base-ghc
 
-#Adapt Makefile to tag and fit your own docker repository
+#Adapt Makefile to DOCKER_TAG to tag and fit your own docker registry
 make
 ```
-
-
 
