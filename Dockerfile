@@ -1,31 +1,35 @@
-ARG CABAL_VERSION=3.2.0.0
-
-FROM juampe/base-cabal:${CABAL_VERSION}
+FROM juampe/ubuntu:hirsute
 ARG TARGETARCH
 ARG DEBIAN_FRONTEND="noninteractive"
-ARG GHC_VERSION=8.10.2
+ARG CABAL_VERSION=3.4.0.0
+ARG GHC_VERSION=8.10.4
 ARG JOBS="-j1"
-# export TARGETARCH=arm64 DEBIAN_FRONTEND="noninteractive" CABAL_VERSION=3.2.0.0 GHC_VERSION=8.10.2 NODE_VERSION=1.25.1 JOBS="-j2"
+# export TARGETARCH=arm64 DEBIAN_FRONTEND="noninteractive" CABAL_VERSION=3.4.0.0 GHC_VERSION=8.10.4 NODE_VERSION=1.26.2 JOBS="-j2"
 
-#Install target ghc with debian patches
+COPY util/ /util/
 COPY patches/ /patches/
+RUN /util/install-deb.sh ${TARGETARCH}
+RUN /util/install-cabal.sh ${TARGETARCH} ${CABAL_VERSION}
+RUN /usr/local/bin/cabal update \
+  && /usr/local/bin/cabal install -v3 happy-1.19.12 --overwrite-policy=always \
+  && /usr/local/bin/cabal install -v3 alex --overwrite-policy=always
+
+#Configure ghc
 RUN apt-get -y build-dep ghc \
   && git clone --recurse-submodules --tags https://gitlab.haskell.org/ghc/ghc.git /ghc \
   && cd /ghc \
   && git checkout ghc-${GHC_VERSION}-release \
   && git submodule update --init \
-  && for i in $(cat /patches/ghc-patches-${GHC_VERSION}/series|grep -v ^#);do echo $i ;cat /patches/ghc-patches-${GHC_VERSION}/$i |patch -p1 ;done \
-  && ./boot \
-  && ./configure \
-  && /bin/echo -ne "GhcLibHcOpts+=-haddock\nHAVE_OFD_LOCKING=0\nBUILD_EXTRA_PKGS=NO\nHADDOCK_DOCS=NO\nBUILD_MAN=NO\nBUILD_SPHINX_HTML=NO\nBUILD_SPHINX_PDF=NO" > mk/build.mk \
-
-#Due to build time, force container commit every step
+  && /util/config-ghc.sh ${TARGETARCH} ${GHC_VERSION}
+  
+# Build 
 RUN cd /ghc \
   && make ${JOBS} 
+
+#Need stage2 to make binary-dist
 RUN cd /ghc \
-  && make ${JOBS} install
-#RUN rm -Rf /ghc 
+  && make ${JOBS} binary-dist
 
 
-# #&& /bin/echo -ne "GhcLibHcOpts+=-haddock\nHAVE_OFD_LOCKING=0\nBUILD_EXTRA_PKGS=NO\nHADDOCK_DOCS=NO\nBUILD_MAN=NO\nBUILD_SPHINX_HTML=NO\nBUILD_SPHINX_PDF=NO" > mk/build.mk \
+
 
