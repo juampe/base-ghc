@@ -1,0 +1,37 @@
+ARG TARGETARCH
+FROM juampe/ubuntu:hirsute-${TARGETARCH}
+
+ARG TARGETARCH
+ARG DEBIAN_FRONTEND="noninteractive"
+ARG CABAL_VERSION=3.4.0.0
+ARG JOBS="-j1"
+# export TARGETARCH=arm64 DEBIAN_FRONTEND="noninteractive" CABAL_VERSION=3.4.0.0 GHC_VERSION=8.10.4 NODE_VERSION=1.26.2 JOBS="-j2"
+
+COPY util/ /util/
+COPY patches/ /patches/
+RUN /util/install-deb.sh ${TARGETARCH}
+RUN /util/install-cabal.sh ${TARGETARCH} ${CABAL_VERSION}
+RUN /usr/local/bin/cabal update \
+  && /usr/local/bin/cabal install happy --overwrite-policy=always \
+  && /usr/local/bin/cabal install alex --overwrite-policy=always
+
+RUN apt-get -y build-dep ghc
+
+RUN mkdir /ghc \
+  && cd /ghc \
+  && apt-get source ghc
+
+RUN cd /ghc/ghc-* \
+  && debian/rules \
+  && debian/rules override_dh_auto_configure \
+  && debian/rules override_dh_auto_build
+
+RUN cd /ghc/ghc-8.10.4 \
+  && make binary-dist \
+  && mv ghc*.tar.xz /
+
+
+
+
+
+

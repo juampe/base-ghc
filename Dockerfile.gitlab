@@ -1,0 +1,30 @@
+ARG TARGETARCH
+FROM juampe/ubuntu:hirsute-${TARGETARCH}
+
+ARG TARGETARCH
+ARG DEBIAN_FRONTEND="noninteractive"
+ARG CABAL_VERSION=3.4.0.0
+ARG JOBS="-j1"
+# export TARGETARCH=arm64 DEBIAN_FRONTEND="noninteractive" CABAL_VERSION=3.4.0.0 GHC_VERSION=8.10.4 NODE_VERSION=1.26.2 JOBS="-j2"
+
+COPY util/ /util/
+COPY patches/ /patches/
+RUN /util/install-deb.sh ${TARGETARCH}
+RUN /util/install-cabal.sh ${TARGETARCH} ${CABAL_VERSION}
+RUN apt-get -y build-dep ghc
+
+# RUN apt-get -y clean \
+#   && rm -rf /tmp/* /var/lib/apt/lists/* /var/tmp/* 
+
+RUN /usr/local/bin/cabal update \
+  && /usr/local/bin/cabal install -v3 happy --overwrite-policy=always \
+  && /usr/local/bin/cabal install -v3 alex --overwrite-policy=always \
+  && /usr/local/bin/cabal clean
+
+RUN adduser --disabled-password --gecos "ghc" ghc
+
+ENV GHC="/usr/bin/ghc" \
+  CABAL="/usr/local/bin/cabal" \
+  ALEX="/root/.cabal/bin/alex" \
+  HAPPY="/root/.cabal/bin/happy" 
+
