@@ -14,6 +14,18 @@ HADDOCK_DOCS=NO
 BUILD_MAN=NO
 BUILD_SPHINX_HTML=NO
 BUILD_SPHINX_PDF=NO
+SRC_HC_OPTS += -lffi -optl-pthread
+EXTRA_HADDOCK_OPTS += --mathjax=file:///usr/share/javascript/mathjax/MathJax.js
+XSLTPROC_OPTS += --nonet
+GhcRTSWays += $(if $(filter p, $(GhcLibWays)),thr_debug_p,)
+ghclibdir := ${libdir}/ghc
+bindir  := /usr/bin
+docdir  := $(datarootdir)/doc/ghc-doc
+htmldir := $(docdir)
+dvidir  := $(docdir)
+pdfdir  := $(docdir)
+psdir   := $(docdir)
+V=1
 EOF
 
 for i in $( cat /patches/$GHC/$ARCH/index|grep -v ^# )
