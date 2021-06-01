@@ -22,6 +22,8 @@ RUN mkdir /ghc \
   && apt-get source ghc
 
 RUN cd /ghc/ghc-* \
+  && sed -i 's/use-stage1-binaries-for-install.patch/#use-stage1-binaries-for-install.patch/' debian/patches/series \
+  && patch -p1 -R < debian/patches/use-stage1-binaries-for-install.patch \
   && debian/rules \
   && debian/rules override_dh_auto_configure \
   && debian/rules override_dh_auto_build
