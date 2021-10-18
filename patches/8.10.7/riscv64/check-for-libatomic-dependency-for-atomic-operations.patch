@@ -1,0 +1,78 @@
+Description: Check for libatomic dependency for atomic operations
+
+Index: b/configure.ac
+===================================================================
+diff --git a/configure.ac b/configure.ac
+index a1a561d70e2c5b0274c13f7ecbc55c2d087c0bc5..cde0637d1f34c232e377e3a453e4251a29d3cc90 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -1189,6 +1189,32 @@ AC_LINK_IFELSE([AC_LANG_CALL([], [printf\$LDBLStub])],
+ 
+ FP_CHECK_PTHREADS
+ 
++AC_MSG_CHECKING(whether -latomic is needed for sub-word-sized atomic operations)
++AC_LINK_IFELSE([AC_LANG_PROGRAM([[unsigned char a;]], [[__atomic_fetch_or(&a, 1, __ATOMIC_RELAXED);]])],
++    [
++        AC_MSG_RESULT(no)
++        AC_SUBST([CabalNeedLibatomic],[False])
++        need_latomic=0
++    ],
++    [
++        _save_LIBS=$LIBS
++        LIBS="-latomic"
++        AC_LINK_IFELSE([AC_LANG_PROGRAM([[unsigned char a;]], [[__atomic_fetch_or(&a, 1, __ATOMIC_RELAXED);]])],
++            [
++                AC_MSG_RESULT(yes)
++                AC_SUBST([CabalNeedLibatomic],[True])
++                need_latomic=1
++            ],
++            [
++                AC_SUBST([CabalNeedLibatomic],[False])
++                AC_MSG_ERROR([sub-word-sized atomic operations not available.])
++                need_latomic=0
++            ])
++        LIBS=$_save_LIBS
++    ])
++AC_DEFINE_UNQUOTED([NEED_ATOMIC_LIB], [$need_latomic],
++    [Define to 1 if we need -latomic for sub-word atomic operations.])
++
+ dnl ** check for eventfd which is needed by the I/O manager
+ AC_CHECK_HEADERS([sys/eventfd.h])
+ AC_CHECK_FUNCS([eventfd])
+diff --git a/rts/package.conf.in b/rts/package.conf.in
+index 6bc38e592d75b1bf929759ad8d6ecbcef03330f6..a4d3edf3fd6ebb01c3df12583346d0c257fd17e4 100644
+--- a/rts/package.conf.in
++++ b/rts/package.conf.in
+@@ -63,6 +63,9 @@ extra-libraries:
+                              , "elf"
+                              , "dw"             /* for backtraces */
+ #endif
++#if NEED_ATOMIC_LIB
++                             , "atomic"
++#endif
+ 
+ #if defined(INSTALLING)
+ include-dirs:           INCLUDE_DIR FFI_INCLUDE_DIR
+diff --git a/rts/rts.cabal.in b/rts/rts.cabal.in
+index 5739af6713833fe6886e160728362d9c16490fc5..d1f5681d794bba26b2a535c0a11dfa39abf76ed6 100644
+--- a/rts/rts.cabal.in
++++ b/rts/rts.cabal.in
+@@ -20,6 +20,8 @@ flag libbfd
+   default: @CabalHaveLibbfd@
+ flag mingwex
+   default: @CabalMingwex@
++flag need-atomic
++  default: @CabalNeedLibatomic@
+ flag libdw
+   default: @CabalHaveLibdw@
+ flag libnuma
+@@ -126,6 +128,9 @@ library
+     if flag(need-pthread)
+        -- for pthread_getthreadid_np, pthread_create, ...
+        extra-libraries: pthread
++    if flag(need-atomic)
++       -- for sub-word-sized atomic operations (#19119)
++       extra-libraries: atomic
+     if flag(libbfd)
+        -- for debugging
+        extra-libraries: bfd iberty
