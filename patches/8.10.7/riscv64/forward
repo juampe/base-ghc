@@ -1,4 +1,4 @@
 llvm-9-14.patch
 risc-disable-label-warning.patch
-check-for-libatomic-dependency-for-atomic-operations.patch
+#check-for-libatomic-dependency-for-atomic-operations.patch #va con el make para PRIM
 #use-stage1-binaries-for-install.patch
